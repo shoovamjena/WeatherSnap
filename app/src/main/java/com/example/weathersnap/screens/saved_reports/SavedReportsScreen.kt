@@ -1,6 +1,5 @@
 package com.example.weathersnap.screens.saved_reports
 
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -8,15 +7,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,86 +48,95 @@ fun SavedReportsScreen(
     viewModel: SavedReportsViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit
 ) {
-
     val reports by viewModel.reports.collectAsState()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = Color(0xff2b3009)
+        containerColor = Color(0xff2b3009),
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
-                .windowInsetsPadding(WindowInsets.statusBars)
+                .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Header Card
-            Box(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xffbfcd81), RoundedCornerShape(15.dp))
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                Row(
-                    Modifier
-                        .padding(20.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "Saved Reports",
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp
-                        )
-                        Text(
-                            "${reports.size} saved reports locally",
-                            color = Color.Black.copy(0.7f),
-                            fontSize = 10.sp
-                        )
-                    }
-                    Button(
-                        onClick = onNavigateBack,
-                        colors = ButtonDefaults.buttonColors(Color.Black),
-                        shape = RoundedCornerShape(25)
-                    ) {
-                        Text(
-                            "Back",
-                            color = Color(0xffbfcd81),
-                            fontSize = 12.sp
-                        )
-                    }
-                }
-            }
+                Spacer(modifier = Modifier.height(4.dp))
 
-            if (reports.isEmpty()) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xffbfcd81), RoundedCornerShape(15.dp))
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "📂",
-                            fontSize = 48.sp
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "No reports saved yet.",
-                            color = Color.White.copy(0.5f),
-                            fontSize = 16.sp
-                        )
+                    Row(
+                        Modifier
+                            .padding(20.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            AutoSizeText(
+                                text = "Saved Reports",
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp
+                            )
+                            AutoSizeText(
+                                text = "${reports.size} saved reports locally",
+                                color = Color.Black.copy(0.7f),
+                                fontSize = 10.sp,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = onNavigateBack,
+                            colors = ButtonDefaults.buttonColors(Color.Black),
+                            shape = RoundedCornerShape(25)
+                        ) {
+                            AutoSizeText(
+                                text = "Back",
+                                color = Color(0xffbfcd81),
+                                fontSize = 12.sp
+                            )
+                        }
                     }
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(20.dp),
-                    contentPadding = PaddingValues(bottom = 20.dp)
-                ) {
-                    items(reports) { report ->
-                        ReportCard(report = report)
+
+                if (reports.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "📂",
+                                fontSize = 48.sp
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            AutoSizeText(
+                                text = "No reports saved yet.",
+                                color = Color.White.copy(0.5f),
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(20.dp),
+                        contentPadding = PaddingValues(bottom = 20.dp)
+                    ) {
+                        items(reports) { report ->
+                            ReportCard(report = report)
+                        }
                     }
                 }
             }
@@ -142,7 +153,6 @@ fun ReportCard(report: SavedReport) {
             .padding(15.dp),
         verticalArrangement = Arrangement.spacedBy(15.dp)
     ) {
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -163,8 +173,8 @@ fun ReportCard(report: SavedReport) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
-                Text(
+            Column(modifier = Modifier.weight(1f)) {
+                AutoSizeText(
                     text = report.cityName,
                     color = Color.White,
                     fontSize = 18.sp,
@@ -173,13 +183,14 @@ fun ReportCard(report: SavedReport) {
                 val sdf = SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault())
                 val dateString = sdf.format(Date(report.timestamp))
 
-                Text(
+                AutoSizeText(
                     text = "${report.condition} • $dateString",
                     color = Color.White.copy(0.5f),
                     fontSize = 12.sp
                 )
             }
-            Text(
+            Spacer(modifier = Modifier.width(12.dp))
+            AutoSizeText(
                 text = "${report.temperature}°C",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
@@ -189,7 +200,7 @@ fun ReportCard(report: SavedReport) {
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             MiniStatBox("Humidity", "${report.humidity}%", Color(0xff2e7964), Modifier.weight(1f))
             MiniStatBox("Wind", "${report.windSpeed} m/s", Color(0xff335c8f), Modifier.weight(1f))
@@ -204,26 +215,35 @@ fun ReportCard(report: SavedReport) {
                     .padding(12.dp)
             ) {
                 Column {
-                    Text("Field Notes", color = Color.White.copy(0.5f), fontSize = 10.sp)
+                    AutoSizeText("Field Notes", color = Color.White.copy(0.5f), fontSize = 10.sp)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(report.notes, color = Color.White, fontSize = 14.sp)
+                    Text(
+                        text = report.notes,
+                        color = Color.White,
+                        fontSize = 14.sp
+                    )
                 }
             }
         }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            AutoSizeText(
                 text = "Original File: ${report.originalSizeMb} MB",
                 color = Color.White.copy(0.3f),
-                fontSize = 10.sp
+                fontSize = 10.sp,
+                modifier = Modifier.weight(1f)
             )
-            Text(
+            Spacer(modifier = Modifier.width(8.dp))
+            AutoSizeText(
                 text = "Compressed File: ${report.compressedSizeMb} MB",
                 color = Color(0xffbfcd81),
-                fontSize = 10.sp
+                fontSize = 10.sp,
+                textAlign = TextAlign.End,
+                modifier = Modifier.weight(1f)
             )
         }
     }
@@ -236,8 +256,46 @@ fun MiniStatBox(label: String, value: String, color: Color, modifier: Modifier =
             .background(color.copy(0.15f), RoundedCornerShape(10.dp))
     ) {
         Column(Modifier.padding(10.dp)) {
-            Text(label, color = Color.White.copy(0.5f), fontSize = 10.sp)
-            Text(value, color = color, fontSize = 14.sp)
+            AutoSizeText(label, color = Color.White.copy(0.5f), fontSize = 10.sp)
+            AutoSizeText(value, color = color, fontSize = 14.sp)
         }
     }
+}
+
+@Composable
+fun AutoSizeText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontWeight: FontWeight? = null,
+    textAlign: TextAlign? = null,
+    minFontSize: TextUnit = 8.sp
+) {
+    var scaledTextStyle by remember {
+        mutableStateOf(TextStyle(fontSize = fontSize, fontWeight = fontWeight, textAlign = textAlign?: TextAlign.Center))
+    }
+    var readyToDraw by remember { mutableStateOf(false) }
+
+    Text(
+        text = text,
+        modifier = modifier.drawWithContent {
+            if (readyToDraw) drawContent()
+        },
+        color = color,
+        maxLines = 1,
+        style = scaledTextStyle,
+        overflow = TextOverflow.Ellipsis,
+        onTextLayout = { textLayoutResult ->
+            if (textLayoutResult.didOverflowWidth || textLayoutResult.didOverflowHeight) {
+                if (scaledTextStyle.fontSize.value > minFontSize.value) {
+                    scaledTextStyle = scaledTextStyle.copy(fontSize = (scaledTextStyle.fontSize.value * 0.9f).sp)
+                } else {
+                    readyToDraw = true
+                }
+            } else {
+                readyToDraw = true
+            }
+        }
+    )
 }

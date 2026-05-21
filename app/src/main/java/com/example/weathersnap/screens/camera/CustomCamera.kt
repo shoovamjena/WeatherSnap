@@ -22,10 +22,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -103,7 +108,7 @@ fun CustomCameraScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
+                AutoSizeText(
                     text = "Custom Camera",
                     color = Color.White,
                     fontSize = 20.sp,
@@ -116,7 +121,7 @@ fun CustomCameraScreen(
                     shape = RoundedCornerShape(25),
                     border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(0.5f))
                 ) {
-                    Text("Close", color = Color.White)
+                    AutoSizeText(text = "Close", color = Color.White)
                 }
             }
 
@@ -132,21 +137,23 @@ fun CustomCameraScreen(
                 colors = ButtonDefaults.buttonColors(Color(0xffbfcd81)),
                 shape = RoundedCornerShape(50)
             ) {
-                Text("Capture", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                AutoSizeText(text = "Capture", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
     } else {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black),
+                .background(Color.Black)
+                .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                "Camera permission is required to capture evidence.",
+            AutoSizeText(
+                text = "Camera permission is required to capture evidence.",
                 color = Color.White,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -154,9 +161,10 @@ fun CustomCameraScreen(
             Button(
                 onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) },
                 colors = ButtonDefaults.buttonColors(Color(0xffbfcd81)),
-                shape = RoundedCornerShape(50)
+                shape = RoundedCornerShape(50),
+                modifier = Modifier.fillMaxWidth(0.8f)
             ) {
-                Text("Grant Permission", color = Color.Black, fontWeight = FontWeight.Bold)
+                AutoSizeText(text = "Grant Permission", color = Color.Black, fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -165,14 +173,14 @@ fun CustomCameraScreen(
                 onClick = onClose,
                 colors = ButtonDefaults.buttonColors(Color.Transparent),
                 border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(0.5f)),
-                shape = RoundedCornerShape(50)
+                shape = RoundedCornerShape(50),
+                modifier = Modifier.fillMaxWidth(0.8f)
             ) {
-                Text("Go Back", color = Color.White)
+                AutoSizeText(text = "Go Back", color = Color.White)
             }
         }
     }
 }
-
 
 private fun captureAndCompressImage(
     context: Context,
@@ -204,6 +212,44 @@ private fun captureAndCompressImage(
 
             override fun onError(exc: ImageCaptureException) {
                 Log.e("CameraX", "Photo capture failed: ${exc.message}", exc)
+            }
+        }
+    )
+}
+
+@Composable
+fun AutoSizeText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontWeight: FontWeight? = null,
+    textAlign: TextAlign? = null,
+    minFontSize: TextUnit = 8.sp
+) {
+    var scaledTextStyle by remember {
+        mutableStateOf(TextStyle(fontSize = fontSize, fontWeight = fontWeight, textAlign = textAlign?: TextAlign.Center))
+    }
+    var readyToDraw by remember { mutableStateOf(false) }
+
+    Text(
+        text = text,
+        modifier = modifier.drawWithContent {
+            if (readyToDraw) drawContent()
+        },
+        color = color,
+        maxLines = 1,
+        style = scaledTextStyle,
+        overflow = TextOverflow.Ellipsis,
+        onTextLayout = { textLayoutResult ->
+            if (textLayoutResult.didOverflowWidth || textLayoutResult.didOverflowHeight) {
+                if (scaledTextStyle.fontSize.value > minFontSize.value) {
+                    scaledTextStyle = scaledTextStyle.copy(fontSize = (scaledTextStyle.fontSize.value * 0.9f).sp)
+                } else {
+                    readyToDraw = true
+                }
+            } else {
+                readyToDraw = true
             }
         }
     )
