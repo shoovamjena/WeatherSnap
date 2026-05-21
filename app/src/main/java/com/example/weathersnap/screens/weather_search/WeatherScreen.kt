@@ -55,7 +55,9 @@ sealed class WeatherUiState {
 @ExperimentalMaterial3Api
 @Composable
 fun WeatherScreen(
-    viewModel: WeatherViewModel = hiltViewModel()
+    viewModel: WeatherViewModel = hiltViewModel(),
+    onNavigateToCreateReport:(WeatherData) -> Unit,
+    onNavigateToSavedReports:() -> Unit
 ) {
     val query by viewModel.searchQuery.collectAsState()
     val suggestions by viewModel.citySuggestions.collectAsState()
@@ -106,7 +108,7 @@ fun WeatherScreen(
                         )
                     }
                     Button(
-                        onClick = { /* Navigate to Reports Screen */ },
+                        onClick = { onNavigateToSavedReports() },
                         colors = ButtonDefaults.buttonColors(Color(0xff2d3400)),
                         shape = RoundedCornerShape(25)
                     ) {
@@ -209,7 +211,7 @@ fun WeatherScreen(
 
                 val isDropdownVisible = suggestions.isNotEmpty()
 
-                // OUTER CONTAINER
+
                 AnimatedVisibility(
                     visible = isDropdownVisible,
                     modifier = Modifier.layout { measurable, constraints ->
@@ -457,7 +459,8 @@ fun WeatherScreen(
                 Button(
                     onClick = {
                         if (weatherState is WeatherUiState.Success) {
-                            /* Navigate to CreateReportScreen */
+                            val currentData = (weatherState as WeatherUiState.Success).data
+                            onNavigateToCreateReport(currentData)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),

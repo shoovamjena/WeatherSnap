@@ -60,7 +60,7 @@ class WeatherViewModel @Inject constructor(
         val currentQuery = _searchQuery.value.trim()
 
         if (currentQuery.length > 2) {
-            _weatherState.value = WeatherUiState.Loading // Show loading spinner
+            _weatherState.value = WeatherUiState.Loading
             _citySuggestions.value = emptyList()
 
             viewModelScope.launch {
